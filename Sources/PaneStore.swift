@@ -185,6 +185,24 @@ final class PaneStore: ObservableObject {
         }
     }
 
+    func insertAtRoot(_ position: PaneInsertPosition) {
+        let newLeaf = PaneLeaf(id: UUID(), index: nextLeafIndex)
+        let currentRoot = root
+        let firstNode: PaneNode = position.putsNewLeafFirst ? .leaf(newLeaf) : currentRoot
+        let secondNode: PaneNode = position.putsNewLeafFirst ? currentRoot : .leaf(newLeaf)
+
+        root = .split(
+            PaneSplit(
+                id: UUID(),
+                axis: position.axis,
+                first: firstNode,
+                second: secondNode,
+            )
+        )
+        focusedLeafID = newLeaf.id
+        nextLeafIndex += 1
+    }
+
     func closeFocused() {
         guard let focusedLeafID else {
             return

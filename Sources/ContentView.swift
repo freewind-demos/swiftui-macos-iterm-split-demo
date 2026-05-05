@@ -2,12 +2,21 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var paneStore: PaneStore
+    @State private var hoveredRootPosition: PaneInsertPosition?
 
     var body: some View {
         VStack(spacing: 16) {
             header
             PaneNodeView(node: paneStore.root)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay {
+                    PaneInsertHandlesView(
+                        hoveredPosition: $hoveredRootPosition,
+                        onInsert: { position in
+                            paneStore.insertAtRoot(position)
+                        }
+                    )
+                }
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -23,7 +32,8 @@ struct ContentView: View {
             Label("Cmd+D 左右分屏", systemImage: "rectangle.split.2x1")
             Label("Shift+Cmd+D 上下分屏", systemImage: "rectangle.split.1x2")
             Label("Cmd+W 关闭当前 pane", systemImage: "xmark")
-            Label("点 pane 后可继续分", systemImage: "cursorarrow.click.2")
+            Label("点 pane 聚焦", systemImage: "cursorarrow.click.2")
+            Label("整窗四边可扩一行/列", systemImage: "inset.filled.rectangle.badge.plus")
             Spacer()
             Button("重置布局") {
                 paneStore.reset()
@@ -68,7 +78,6 @@ struct PaneLeafView: View {
     let leaf: PaneLeaf
 
     @EnvironmentObject private var paneStore: PaneStore
-    @State private var hoveredPosition: PaneInsertPosition?
 
     var body: some View {
         let isFocused = paneStore.focusedLeafID == leaf.id
@@ -92,15 +101,6 @@ struct PaneLeafView: View {
         .overlay {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(isFocused ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isFocused ? 3 : 1)
-        }
-        .overlay {
-            PaneInsertHandlesView(
-                hoveredPosition: $hoveredPosition,
-                onInsert: { position in
-                    paneStore.focus(leaf.id)
-                    paneStore.insertFocused(at: position)
-                }
-            )
         }
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .contentShape(Rectangle())
