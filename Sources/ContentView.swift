@@ -7,16 +7,14 @@ struct ContentView: View {
     var body: some View {
         VStack(spacing: 16) {
             header
-            PaneNodeView(node: paneStore.root)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .overlay {
-                    PaneInsertHandlesView(
-                        hoveredPosition: $hoveredRootPosition,
-                        onInsert: { position in
-                            paneStore.insertAtRoot(position)
-                        }
-                    )
+            PaneRootCanvasView(
+                node: paneStore.root,
+                hoveredPosition: $hoveredRootPosition,
+                onInsert: { position in
+                    paneStore.insertAtRoot(position)
                 }
+            )
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -99,10 +97,9 @@ struct PaneLeafView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(backgroundColor.opacity(0.35))
         .overlay {
-            RoundedRectangle(cornerRadius: 14)
+            Rectangle()
                 .stroke(isFocused ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isFocused ? 3 : 1)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 14))
         .contentShape(Rectangle())
         .onTapGesture {
             paneStore.focus(leaf.id)
@@ -115,26 +112,48 @@ struct PaneLeafView: View {
     }
 }
 
-struct PaneInsertHandlesView: View {
+struct PaneRootCanvasView: View {
+    let node: PaneNode
+
     @Binding var hoveredPosition: PaneInsertPosition?
 
     let onInsert: (PaneInsertPosition) -> Void
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 0) {
+        VStack(spacing: 6) {
+            HStack(spacing: 6) {
+                Color.clear
+                    .frame(width: 10, height: 10)
+
                 edgeHandle(.top)
-                Spacer(minLength: 0)
-                edgeHandle(.bottom)
+                    .frame(maxWidth: .infinity)
+
+                Color.clear
+                    .frame(width: 10, height: 10)
             }
 
-            HStack(spacing: 0) {
+            HStack(spacing: 6) {
                 edgeHandle(.left)
-                Spacer(minLength: 0)
+                    .frame(maxHeight: .infinity)
+
+                PaneNodeView(node: node)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
                 edgeHandle(.right)
+                    .frame(maxHeight: .infinity)
+            }
+
+            HStack(spacing: 6) {
+                Color.clear
+                    .frame(width: 10, height: 10)
+
+                edgeHandle(.bottom)
+                    .frame(maxWidth: .infinity)
+
+                Color.clear
+                    .frame(width: 10, height: 10)
             }
         }
-        .padding(6)
     }
 
     @ViewBuilder
@@ -143,7 +162,7 @@ struct PaneInsertHandlesView: View {
             onInsert(position)
         } label: {
             ZStack {
-                RoundedRectangle(cornerRadius: 999)
+                Rectangle()
                     .fill(fillColor(position))
 
                 if hoveredPosition == position {
@@ -159,26 +178,8 @@ struct PaneInsertHandlesView: View {
             width: position == .left || position == .right ? 10 : 54,
             height: position == .top || position == .bottom ? 10 : 54,
         )
-        .frame(
-            maxWidth: position == .top || position == .bottom ? .infinity : nil,
-            maxHeight: position == .left || position == .right ? .infinity : nil,
-            alignment: alignment(position),
-        )
         .onHover { isHovered in
             hoveredPosition = isHovered ? position : (hoveredPosition == position ? nil : hoveredPosition)
-        }
-    }
-
-    private func alignment(_ position: PaneInsertPosition) -> Alignment {
-        switch position {
-        case .left:
-            .leading
-        case .right:
-            .trailing
-        case .top:
-            .top
-        case .bottom:
-            .bottom
         }
     }
 
