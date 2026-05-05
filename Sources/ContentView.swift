@@ -11,12 +11,18 @@ struct ContentView: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            KeyboardMonitorView()
+                .environmentObject(paneStore)
+                .frame(width: 0, height: 0)
+        }
     }
 
     private var header: some View {
         HStack(spacing: 16) {
             Label("Cmd+D 左右分屏", systemImage: "rectangle.split.2x1")
             Label("Shift+Cmd+D 上下分屏", systemImage: "rectangle.split.1x2")
+            Label("Cmd+W 关闭当前 pane", systemImage: "xmark")
             Label("点 pane 后可继续分", systemImage: "cursorarrow.click.2")
             Spacer()
             Button("重置布局") {
@@ -62,6 +68,7 @@ struct PaneLeafView: View {
     let leaf: PaneLeaf
 
     @EnvironmentObject private var paneStore: PaneStore
+    @State private var hoveredPosition: PaneInsertPosition?
 
     var body: some View {
         let isFocused = paneStore.focusedLeafID == leaf.id
@@ -86,6 +93,15 @@ struct PaneLeafView: View {
             RoundedRectangle(cornerRadius: 14)
                 .stroke(isFocused ? Color.accentColor : Color.secondary.opacity(0.3), lineWidth: isFocused ? 3 : 1)
         }
+        .overlay {
+            PaneInsertHandlesView(
+                hoveredPosition: $hoveredPosition,
+                onInsert: { position in
+                    paneStore.focus(leaf.id)
+                    paneStore.insertFocused(at: position)
+                }
+            )
+        }
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .contentShape(Rectangle())
         .onTapGesture {
@@ -96,5 +112,99 @@ struct PaneLeafView: View {
     private var backgroundColor: Color {
         let colors: [Color] = [.blue, .green, .orange, .pink, .mint, .cyan]
         return colors[(leaf.index - 1) % colors.count]
+    }
+}
+
+struct PaneInsertHandlesView: View {
+    @Binding var hoveredPosition: PaneInsertPosition?
+
+    let onInsert: (PaneInsertPosition) -> Void
+
+    var body: some View {
+        ZStack {
+            VStack(spacing: 0) {
+                edgeHandle(.top)
+                Spacer(minLength: 0)
+                edgeHandle(.bottom)
+            }
+
+            HStack(spacing: 0) {
+                edgeHandle(.left)
+                Spacer(minLength: 0)
+                edgeHandle(.right)
+            }
+        }
+        .padding(6)
+    }
+
+    @ViewBuilder
+    private func edgeHandle(_ position: PaneInsertPosition) -> some View {
+        Button {
+            onInsert(position)
+        } label: {
+            ZStack {
+                RoundedRectangle(cornerRadius: 999)
+                    .fill(fillColor(position))
+
+                if hoveredPosition == position {
+                    Image(systemName: symbolName(position))
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .help(helpText(position))
+        .frame(
+            width: position == .left || position == .right ? 10 : 54,
+            height: position == .top || position == .bottom ? 10 : 54,
+        )
+        .frame(
+            maxWidth: position == .top || position == .bottom ? .infinity : nil,
+            maxHeight: position == .left || position == .right ? .infinity : nil,
+            alignment: alignment(position),
+        )
+        .onHover { isHovered in
+            hoveredPosition = isHovered ? position : (hoveredPosition == position ? nil : hoveredPosition)
+        }
+    }
+
+    private func alignment(_ position: PaneInsertPosition) -> Alignment {
+        switch position {
+        case .left:
+            .leading
+        case .right:
+            .trailing
+        case .top:
+            .top
+        case .bottom:
+            .bottom
+        }
+    }
+
+    private func fillColor(_ position: PaneInsertPosition) -> Color {
+        hoveredPosition == position ? .accentColor : .black.opacity(0.16)
+    }
+
+    private func symbolName(_ position: PaneInsertPosition) -> String {
+        switch position {
+        case .left, .right:
+            "rectangle.split.2x1"
+        case .top, .bottom:
+            "rectangle.split.1x2"
+        }
+    }
+
+    private func helpText(_ position: PaneInsertPosition) -> String {
+        switch position {
+        case .left:
+            "在左侧加一列"
+        case .right:
+            "在右侧加一列"
+        case .top:
+            "在上方加一行"
+        case .bottom:
+            "在下方加一行"
+        }
     }
 }

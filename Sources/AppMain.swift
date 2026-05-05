@@ -24,6 +24,13 @@ struct ITermSplitDemoApp: App {
 
                 Divider()
 
+                Button("Close Current Pane") {
+                    paneStore.closeFocused()
+                }
+                .keyboardShortcut("w", modifiers: [.command])
+
+                Divider()
+
                 Button("Reset Layout") {
                     paneStore.reset()
                 }

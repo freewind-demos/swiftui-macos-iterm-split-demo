@@ -5,6 +5,31 @@ enum PaneSplitAxis {
     case topBottom
 }
 
+enum PaneInsertPosition {
+    case left
+    case right
+    case top
+    case bottom
+
+    var axis: PaneSplitAxis {
+        switch self {
+        case .left, .right:
+            .leftRight
+        case .top, .bottom:
+            .topBottom
+        }
+    }
+
+    var putsNewLeafFirst: Bool {
+        switch self {
+        case .left, .top:
+            true
+        case .right, .bottom:
+            false
+        }
+    }
+}
+
 struct PaneLeaf: Identifiable {
     let id: UUID
     let index: Int
@@ -34,35 +59,82 @@ indirect enum PaneNode: Identifiable {
         }
     }
 
-    mutating func splitLeaf(targetID: UUID, axis: PaneSplitAxis, newLeaf: PaneLeaf) -> Bool {
+    var firstLeafID: UUID {
+        switch self {
+        case .leaf(let leaf):
+            leaf.id
+        case .split(let split):
+            split.first.firstLeafID
+        }
+    }
+
+    mutating func insertLeaf(targetID: UUID, position: PaneInsertPosition, newLeaf: PaneLeaf) -> Bool {
         switch self {
         case .leaf(let leaf):
             guard leaf.id == targetID else {
                 return false
             }
 
+            let firstNode: PaneNode = position.putsNewLeafFirst ? .leaf(newLeaf) : .leaf(leaf)
+            let secondNode: PaneNode = position.putsNewLeafFirst ? .leaf(leaf) : .leaf(newLeaf)
             self = .split(
                 PaneSplit(
                     id: UUID(),
-                    axis: axis,
-                    first: .leaf(leaf),
-                    second: .leaf(newLeaf),
+                    axis: position.axis,
+                    first: firstNode,
+                    second: secondNode,
                 )
             )
             return true
 
         case .split(var split):
-            if split.first.splitLeaf(targetID: targetID, axis: axis, newLeaf: newLeaf) {
+            if split.first.insertLeaf(targetID: targetID, position: position, newLeaf: newLeaf) {
                 self = .split(split)
                 return true
             }
 
-            if split.second.splitLeaf(targetID: targetID, axis: axis, newLeaf: newLeaf) {
+            if split.second.insertLeaf(targetID: targetID, position: position, newLeaf: newLeaf) {
                 self = .split(split)
                 return true
             }
 
             return false
+        }
+    }
+
+    mutating func removeLeaf(targetID: UUID) -> UUID? {
+        switch self {
+        case .leaf:
+            return nil
+
+        case .split(var split):
+            switch split.first {
+            case .leaf(let leaf) where leaf.id == targetID:
+                self = split.second
+                return self.firstLeafID
+            default:
+                break
+            }
+
+            switch split.second {
+            case .leaf(let leaf) where leaf.id == targetID:
+                self = split.first
+                return self.firstLeafID
+            default:
+                break
+            }
+
+            if let nextFocusedLeafID = split.first.removeLeaf(targetID: targetID) {
+                self = .split(split)
+                return nextFocusedLeafID
+            }
+
+            if let nextFocusedLeafID = split.second.removeLeaf(targetID: targetID) {
+                self = .split(split)
+                return nextFocusedLeafID
+            }
+
+            return nil
         }
     }
 }
@@ -93,14 +165,46 @@ final class PaneStore: ObservableObject {
     }
 
     func splitFocused(_ axis: PaneSplitAxis) {
+        switch axis {
+        case .leftRight:
+            insertFocused(at: .right)
+        case .topBottom:
+            insertFocused(at: .bottom)
+        }
+    }
+
+    func insertFocused(at position: PaneInsertPosition) {
         guard let focusedLeafID else {
             return
         }
 
         let newLeaf = PaneLeaf(id: UUID(), index: nextLeafIndex)
-        if root.splitLeaf(targetID: focusedLeafID, axis: axis, newLeaf: newLeaf) {
+        if root.insertLeaf(targetID: focusedLeafID, position: position, newLeaf: newLeaf) {
             self.focusedLeafID = newLeaf.id
             nextLeafIndex += 1
+        }
+    }
+
+    func closeFocused() {
+        guard let focusedLeafID else {
+            return
+        }
+
+        guard !isRootLeaf(focusedLeafID) else {
+            return
+        }
+
+        if let nextFocusedLeafID = root.removeLeaf(targetID: focusedLeafID) {
+            self.focusedLeafID = nextFocusedLeafID
+        }
+    }
+
+    private func isRootLeaf(_ leafID: UUID) -> Bool {
+        switch root {
+        case .leaf(let leaf):
+            leaf.id == leafID
+        case .split:
+            false
         }
     }
 }

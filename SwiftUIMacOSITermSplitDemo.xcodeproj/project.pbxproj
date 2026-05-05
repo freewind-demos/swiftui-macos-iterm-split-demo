@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		187A5E176C4E41ED4170FEAD /* KeyboardMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48D4DB15C8541454E1A68705 /* KeyboardMonitor.swift */; };
 		1BBFE5F93DF510115B011829 /* AppMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = C880C6A1F934D0AB7EC670D7 /* AppMain.swift */; };
 		4E07C4A4017FAF79FD2F3F9B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE130C4B58308DA0437FD0A /* ContentView.swift */; };
 		C6231CC3EF7E55FC5B20309E /* PaneStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 754E378122B6EA4BB0AB45A5 /* PaneStore.swift */; };
@@ -14,6 +15,7 @@
 
 /* Begin PBXFileReference section */
 		0718D0F76B65C67EC2CC238B /* SwiftUIMacOSITermSplitDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftUIMacOSITermSplitDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		48D4DB15C8541454E1A68705 /* KeyboardMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardMonitor.swift; sourceTree = "<group>"; };
 		754E378122B6EA4BB0AB45A5 /* PaneStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaneStore.swift; sourceTree = "<group>"; };
 		8E6D4C7E590DD7E351C99952 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		9EE130C4B58308DA0437FD0A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -43,6 +45,7 @@
 				C880C6A1F934D0AB7EC670D7 /* AppMain.swift */,
 				9EE130C4B58308DA0437FD0A /* ContentView.swift */,
 				8E6D4C7E590DD7E351C99952 /* Info.plist */,
+				48D4DB15C8541454E1A68705 /* KeyboardMonitor.swift */,
 				754E378122B6EA4BB0AB45A5 /* PaneStore.swift */,
 			);
 			path = Sources;
@@ -109,6 +112,7 @@
 			files = (
 				1BBFE5F93DF510115B011829 /* AppMain.swift in Sources */,
 				4E07C4A4017FAF79FD2F3F9B /* ContentView.swift in Sources */,
+				187A5E176C4E41ED4170FEAD /* KeyboardMonitor.swift in Sources */,
 				C6231CC3EF7E55FC5B20309E /* PaneStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
