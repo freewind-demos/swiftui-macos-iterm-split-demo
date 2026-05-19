@@ -21,3 +21,11 @@ targets:
         CODE_SIGN_STYLE: Manual
         DEVELOPMENT_TEAM: ""
         ENABLE_HARDENED_RUNTIME: NO
+    productName: SwiftUIMacOSITermSplitDemo
+schemes:
+  SwiftUIMacOSITermSplitDemo:
+    build:
+      targets:
+        SwiftUIMacOSITermSplitDemo: all
+    run:
+      config: Debug
