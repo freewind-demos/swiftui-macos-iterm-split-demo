@@ -82,7 +82,7 @@ indirect enum PaneNode: Identifiable {
                     id: UUID(),
                     axis: position.axis,
                     first: firstNode,
-                    second: secondNode,
+                    second: secondNode
                 )
             )
             return true
@@ -196,7 +196,7 @@ final class PaneStore: ObservableObject {
                 id: UUID(),
                 axis: position.axis,
                 first: firstNode,
-                second: secondNode,
+                second: secondNode
             )
         )
         focusedLeafID = newLeaf.id

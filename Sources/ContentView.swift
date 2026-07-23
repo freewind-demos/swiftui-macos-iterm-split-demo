@@ -176,7 +176,7 @@ struct PaneRootCanvasView: View {
         .help(helpText(position))
         .frame(
             width: position == .left || position == .right ? 10 : 54,
-            height: position == .top || position == .bottom ? 10 : 54,
+            height: position == .top || position == .bottom ? 10 : 54
         )
         .onHover { isHovered in
             hoveredPosition = isHovered ? position : (hoveredPosition == position ? nil : hoveredPosition)
